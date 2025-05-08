@@ -47,7 +47,7 @@ else:
     st.write(df.head())
 
     # --- Plot with Plotly for better UX ---
-    fig = px.line(df, x="Date", y="Percentage", color="Subject",
+    fig = px.line(df, x="Date", y="Percentage", color="Subject", markers=True,
                   title="Your Test Score Trends",
                   labels={"Percentage": "Test Percentage", "Date": "Date"},
                   template="plotly_dark")
