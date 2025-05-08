@@ -1,8 +1,8 @@
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+import plotly.express as px
 from notion_client import Client
 import itertools
+import streamlit as st
 
 # --- Notion Config ---
 NOTION_TOKEN = "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"
@@ -36,34 +36,35 @@ for row in results:
 df = pd.DataFrame(data)
 
 if df.empty:
-    print("⚠️ No complete rows found in the Notion database.")
+    st.warning("⚠️ No complete rows found in the Notion database.")
 else:
     # --- Clean and process ---
     df["Date"] = pd.to_datetime(df["Date"])
     df.sort_values("Date", inplace=True)
     df["Percentage"] = (df["Marks Obtained"] / df["Max Marks"]) * 100
 
-    print("✅ Data Preview:")
-    print(df.head())
+    st.success("✅ Data Preview:")
+    st.write(df.head())
 
-    # --- Plot ---
-    base_palette = {
-        "Chemistry": "dodgerblue",
-        "Physics": "crimson",
-        "Maths": "mediumseagreen",
-        "Mathematics": "mediumseagreen"
-    }
-    all_subjects = df["Subject"].unique()
-    default_colors = itertools.cycle(sns.color_palette("Set2"))
-    palette = {subj: base_palette.get(subj, next(default_colors)) for subj in all_subjects}
+    # --- Plot with Plotly for better UX ---
+    fig = px.line(df, x="Date", y="Percentage", color="Subject", markers=True,
+                  title="Your Test Score Trends",
+                  labels={"Percentage": "Test Percentage", "Date": "Date"},
+                  template="plotly_dark")
 
-    # Plotting
-    plt.figure(figsize=(12, 6))
-    sns.lineplot(data=df, x="Date", y="Percentage", hue="Subject", marker="o", palette=palette)
-    plt.title("Your Test Score Trends", fontsize=18)  # Removed the emoji to avoid glyph issue
-    plt.ylabel("Percentage")
-    plt.xlabel("Date")
-    plt.ylim(0, 110)
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    # Customizing the layout for better UX
+    fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Percentage",
+        title="Your Test Score Trends 📈",
+        plot_bgcolor="black",
+        paper_bgcolor="#2E2E2E",  # Dark background
+        font=dict(color="white"),  # White text
+        xaxis=dict(showgrid=True, gridwidth=1, gridcolor='gray'),
+        yaxis=dict(showgrid=True, gridwidth=1, gridcolor='gray'),
+        showlegend=True,
+        legend=dict(title="Subject", title_font=dict(family="Arial", size=14))
+    )
+
+    # Ensure the plot is shown properly
+    st.plotly_chart(fig)
