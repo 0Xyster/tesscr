@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
 from notion_client import Client
-import itertools
 import streamlit as st
 
 # --- Notion Config ---
@@ -43,28 +42,38 @@ else:
     df.sort_values("Date", inplace=True)
     df["Percentage"] = (df["Marks Obtained"] / df["Max Marks"]) * 100
 
-    st.success("✅ Data Preview:")
-    st.write(df.head())
+    # Add origin (0%) for each subject at earliest date
+    earliest_date = df["Date"].min()
+    subjects = df["Subject"].unique()
 
-    # --- Plot with Plotly for better UX ---
-    fig = px.line(df, x="Date", y="Percentage", color="Subject", markers=True,
-                  title="Your Test Score Trends",
-                  labels={"Percentage": "Test Percentage", "Date": "Date"},
+    origin_rows = pd.DataFrame({
+        "Date": [earliest_date] * len(subjects),
+        "Subject": subjects,
+        "Percentage": [0] * len(subjects),
+        "Test Name": ["Origin"] * len(subjects),
+        "Marks Obtained": [0] * len(subjects),
+        "Max Marks": [1] * len(subjects),  # To avoid division by zero
+    })
+
+    df_full = pd.concat([origin_rows, df], ignore_index=True)
+    df_full.sort_values("Date", inplace=True)
+
+    # --- Plot only the graph ---
+    fig = px.line(df_full, x="Date", y="Percentage", color="Subject", markers=True,
+                  title="Your Test Score Trends 📈",
+                  labels={"Percentage": "Percentage", "Date": "Date"},
                   template="plotly_dark")
 
-    # Customizing the layout for better UX
     fig.update_layout(
         xaxis_title="Date",
         yaxis_title="Percentage",
-        title="Your Test Score Trends 📈",
         plot_bgcolor="black",
-        paper_bgcolor="#2E2E2E",  # Dark background
-        font=dict(color="white"),  # White text
+        paper_bgcolor="#2E2E2E",
+        font=dict(color="white"),
         xaxis=dict(showgrid=True, gridwidth=1, gridcolor='gray'),
         yaxis=dict(showgrid=True, gridwidth=1, gridcolor='gray'),
         showlegend=True,
         legend=dict(title="Subject", title_font=dict(family="Arial", size=14))
     )
 
-    # Ensure the plot is shown properly
     st.plotly_chart(fig)
