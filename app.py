@@ -57,9 +57,10 @@ else:
     default_colors = itertools.cycle(sns.color_palette("Set2"))
     palette = {subj: base_palette.get(subj, next(default_colors)) for subj in all_subjects}
 
+    # Plotting
     plt.figure(figsize=(12, 6))
     sns.lineplot(data=df, x="Date", y="Percentage", hue="Subject", marker="o", palette=palette)
-    plt.title("📈 Your Test Score Trends", fontsize=18)
+    plt.title("Your Test Score Trends", fontsize=18)  # Removed the emoji to avoid glyph issue
     plt.ylabel("Percentage")
     plt.xlabel("Date")
     plt.ylim(0, 110)
