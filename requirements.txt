@@ -2,3 +2,5 @@ pandas
 seaborn
 matplotlib
 notion-client
+streamlit
+plotly
